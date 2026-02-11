@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Valentine's Surprise 💖</title>
+<title>Bhavika's Valentine 💖</title>
 <style>
 body {
-background: pink;
+background: #ffccd5;
 font-family: 'Segoe UI', sans-serif;
 text-align: center;
 color: #fff;
@@ -15,11 +15,10 @@ display: flex;
 flex-direction: column;
 justify-content: center;
 align-items: center;
+overflow: hidden;
 }
-h1 {
-font-size: 2.5em;
-margin-bottom: 20px;
-}
+h1 { font-size: 2.5em; margin-bottom: 10px; }
+p { font-size: 1.5em; margin-bottom: 20px; }
 button {
 background: #ff3366;
 color: white;
@@ -32,71 +31,83 @@ cursor: pointer;
 transition: transform 0.2s;
 }
 button:hover { transform: scale(1.1); }
-#message {
-margin-top: 30px;
-font-size: 1.5em;
-}
-.hearts {
-position: absolute;
-top: 0;
-left: 0;
-pointer-events: none;
-width: 100%;
-height: 100%;
-overflow: hidden;
-}
-.heart {
-position: absolute;
-width: 20px;
-height: 20px;
-background: red;
-transform: rotate(45deg);
-animation: float 3s linear infinite;
-}
-.heart::before, .heart::after {
-content: '';
-position: absolute;
-width: 20px;
-height: 20px;
-background: red;
-border-radius: 50%;
-}
-.heart::before { top: -10px; left: 0; }
-.heart::after { left: 10px; top: 0; }
-
-@keyframes float {
-0% { transform: translateY(0) rotate(45deg); opacity: 1; }
-100% { transform: translateY(-600px) rotate(45deg); opacity: 0; }
-}
+#message { margin-top: 30px; font-size: 1.4em; }
+.hearts, .confetti, .hiddenMessage { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden; }
+.heart, .confetti-piece { position: absolute; width: 20px; height: 20px; transform: rotate(45deg); }
+.heart { background: red; }
+.heart::before, .heart::after { content: ''; position: absolute; width: 20px; height: 20px; background: red; border-radius: 50%; }
+.heart::before { top:-10px; left:0; }
+.heart::after { left:10px; top:0; }
+@keyframes float { 0%{transform:translateY(0) rotate(45deg); opacity:1;} 100%{transform:translateY(-600px) rotate(45deg); opacity:0;} }
+.confetti-piece { width: 10px; height: 10px; }
+.hiddenMessage { display:flex; justify-content:center; align-items:center; font-size:2em; color:#fff; text-shadow: 2px 2px 5px #ff3366; opacity:0; transition: opacity 2s;}
 </style>
 </head>
 <body>
 
 <h1>Hey Bhavika… 💖</h1>
-<p>Will you be my Valentine?</p>
-<button id="yesBtn">Yes 💕</button>
-<button id="noBtn">No 😢</button>
+<p id="question">Will you be my Valentine?</p>
+<div id="buttons">
+<button class="answerBtn" data-answer="yes">Yes 💕</button>
+<button class="answerBtn" data-answer="no">No 😢</button>
+</div>
 
 <div id="message"></div>
 <div class="hearts" id="heartsContainer"></div>
+<div class="confetti" id="confettiContainer"></div>
+<div class="hiddenMessage" id="finalMessage">💖 Bhavika, you are everything to me 💖</div>
 
 <audio id="music" src="https://www.bensound.com/bensound-music/bensound-romantic.mp3"></audio>
 
 <script>
-const yesBtn = document.getElementById('yesBtn');
-const noBtn = document.getElementById('noBtn');
-const message = document.getElementById('message');
+const steps = [
+{ q: "Will you be my Valentine?", yesMsg: "Yay! You made my day ❤️", noMsg: "Oh no 😅 Maybe next time… but chocolate is still safe!" },
+{ q: "Do you like chocolates more than flowers?", yesMsg: "Sweet! Just like you 🍫💖", noMsg: "Flowers are perfect too 🌹😊" },
+{ q: "Are you ready for a little surprise?", yesMsg: "Excited! Wait for it 🎁✨", noMsg: "Haha, patience is part of the fun 😄" },
+{ q: "Do you know someone thinks you are amazing?", yesMsg: "You truly are 💖", noMsg: "I'll keep telling you until you know 😎" },
+{ q: "Could I spend every Valentine’s Day with you?", yesMsg: "You just made me the happiest 💌", noMsg: "I’ll wait… patiently 😅" },
+{ q: "Are you ready to see the magic?", yesMsg: "Here comes all the hearts and love ❤️💖💫", noMsg: "Even a smile is enough to melt me 😊" }
+];
+
+let currentStep = 0;
+const questionEl = document.getElementById('question');
+const buttonsEl = document.getElementById('buttons');
+const messageEl = document.getElementById('message');
 const heartsContainer = document.getElementById('heartsContainer');
+const confettiContainer = document.getElementById('confettiContainer');
+const finalMessage = document.getElementById('finalMessage');
 const music = document.getElementById('music');
 
-yesBtn.addEventListener('click', () => {
-message.textContent = "Yay! You made my Valentine’s Day amazing ❤️";
-playHearts();
-music.play();
-});
+buttonsEl.addEventListener('click', e => {
+if(e.target.classList.contains('answerBtn')) {
+const answer = e.target.dataset.answer;
+const step = steps[currentStep];
 
-noBtn.addEventListener('click', () => {
-message.textContent = "Aww… maybe next time 😅 But I still love chocolate 🍫!";
+if(answer === "yes") {
+messageEl.textContent = step.yesMsg;
+playHearts();
+playConfetti();
+music.play();
+} else {
+messageEl.textContent = step.noMsg;
+}
+
+currentStep++;
+if(currentStep < steps.length){
+setTimeout(() => {
+questionEl.textContent = steps[currentStep].q;
+messageEl.textContent = "";
+}, 2000);
+} else {
+setTimeout(() => {
+questionEl.style.display = "none";
+buttonsEl.style.display = "none";
+messageEl.style.display = "none";
+finalMessage.style.opacity = 1;
+triggerFinalMagic();
+}, 2000);
+}
+}
 });
 
 function playHearts() {
@@ -108,6 +119,30 @@ heart.style.animationDuration = (2 + Math.random()*2) + 's';
 heartsContainer.appendChild(heart);
 setTimeout(() => heartsContainer.removeChild(heart), 4000);
 }
+}
+
+function playConfetti() {
+const colors = ['#ff3366','#ffcc00','#ff66cc','#66ff66'];
+for(let i=0;i<50;i++){
+const piece = document.createElement('div');
+piece.classList.add('confetti-piece');
+piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+piece.style.left = Math.random() * 100 + 'vw';
+piece.style.top = Math.random() * 100 + 'vh';
+confettiContainer.appendChild(piece);
+setTimeout(() => confettiContainer.removeChild(piece), 3000);
+}
+}
+
+// Extra magic at the end: hearts + confetti rain for 5 sec
+function triggerFinalMagic() {
+let count = 0;
+const interval = setInterval(() => {
+playHearts();
+playConfetti();
+count++;
+if(count > 25) clearInterval(interval);
+}, 200);
 }
 </script>
 
